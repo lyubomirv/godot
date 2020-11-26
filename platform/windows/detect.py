@@ -71,6 +71,7 @@ def get_opts():
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed. Only used on Windows.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_thinlto", "Use ThinLTO", False),
+        BoolVariable("use_static_cpp", "When using MinGW, link libgcc, libstdc++ and libpthread statically", True),
     ]
 
 
@@ -373,12 +374,14 @@ def configure_mingw(env):
     mingw_prefix = ""
 
     if env["bits"] == "32":
-        env.Append(LINKFLAGS=["-static"])
-        env.Append(LINKFLAGS=["-static-libgcc"])
-        env.Append(LINKFLAGS=["-static-libstdc++"])
+        if env["use_static_cpp"]:
+            env.Append(LINKFLAGS=["-static"])
+            env.Append(LINKFLAGS=["-static-libgcc"])
+            env.Append(LINKFLAGS=["-static-libstdc++"])
         mingw_prefix = env["mingw_prefix_32"]
     else:
-        env.Append(LINKFLAGS=["-static"])
+        if env["use_static_cpp"]:
+            env.Append(LINKFLAGS=["-static"])
         mingw_prefix = env["mingw_prefix_64"]
 
     if env["use_llvm"]:
